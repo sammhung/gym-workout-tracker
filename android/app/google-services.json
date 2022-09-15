@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "85974797022",
+    "project_id": "gym-workout-tracker-6226c",
+    "storage_bucket": "gym-workout-tracker-6226c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85974797022:android:b786e0e70d364299af104f",
+        "android_client_info": {
+          "package_name": "com.example.gym_workout_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85974797022-ilv01u953vqq6p3e4b92dmei6ahek3sm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHs9KcXDy2Gq46iS9zTbTCEEqJKe_h1T0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85974797022-ilv01u953vqq6p3e4b92dmei6ahek3sm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "85974797022-pmdg6q1fgi6ovdgoeoudep0s2g97s7pm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gymWorkoutApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
