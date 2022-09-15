@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Classes/exerciseGroup.dart';
 import 'package:gym_workout_app/Components/Exercise/GroupDetails.dart';
 import 'package:gym_workout_app/Pages/forms/addExercise.dart';
-import 'package:gym_workout_app/Providers/gym.dart';
+import 'package:gym_workout_app/Providers/exerciseProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -11,6 +11,7 @@ class ExercisesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final exerciseProvider = Provider.of<ExerciseProvider>(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -39,11 +40,10 @@ class ExercisesScreen extends StatelessWidget {
               ),
               Expanded(
                 child: FutureBuilder(
-                  future:
-                      Provider.of<Gym>(context, listen: false).getExercises(),
+                  future: exerciseProvider.loadExercises(),
                   builder: ((context, snapshot) {
                     final List<ExerciseGroup> data =
-                        Provider.of<Gym>(context).exerciseGroups;
+                        exerciseProvider.exerciseGroups;
 
                     if (snapshot.connectionState == ConnectionState.done) {
                       // List of workouts

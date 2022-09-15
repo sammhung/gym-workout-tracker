@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gym_workout_app/Pages/forms/addExercise.dart';
 import 'package:gym_workout_app/Pages/forms/createWorkout.dart';
-import 'package:gym_workout_app/Pages/main/home.dart';
 import 'package:gym_workout_app/Pages/main/navigation.dart';
 import 'package:gym_workout_app/Providers/auth.dart';
-import 'package:gym_workout_app/Providers/gym.dart';
+import 'package:gym_workout_app/Providers/exerciseProvider.dart';
+import 'package:gym_workout_app/Providers/workoutProvider.dart';
 import 'firebase_options.dart';
 
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -34,8 +34,18 @@ class GymApp extends StatelessWidget {
           create: (context) => Auth(),
         ),
         ChangeNotifierProvider(
-          create: (context) => Gym(),
+          create: (context) => ExerciseProvider(),
         ),
+        ChangeNotifierProxyProvider<ExerciseProvider, WorkoutProvider>(
+          create: (_) => WorkoutProvider(),
+          update: (_, exercise, workout) => WorkoutProvider(
+            exerciseGroups: exercise.exerciseGroups,
+            exercises: exercise.exercises,
+          ),
+        ),
+        // ChangeNotifierProvider(
+        //   create: (context) => Gym(),
+        // ),
       ],
       child: ResponsiveSizer(
         builder: (ctx, orientation, screenType) {

@@ -1,6 +1,6 @@
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:gym_workout_app/Providers/gym.dart';
+import 'package:gym_workout_app/Providers/exerciseProvider.dart';
 import 'package:provider/provider.dart';
 
 class AddExerciseForm extends StatefulWidget {
@@ -19,7 +19,7 @@ class _AddExerciseFormState extends State<AddExerciseForm> {
   @override
   Widget build(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
-    final gym = Provider.of<Gym>(context);
+    final exerciseProvider = Provider.of<ExerciseProvider>(context);
     return Expanded(
       child: Form(
         key: _formKey,
@@ -54,7 +54,7 @@ class _AddExerciseFormState extends State<AddExerciseForm> {
 
                 return null;
               },
-              dropDownList: gym.groupNames
+              dropDownList: exerciseProvider.groupNames
                   .map((e) => DropDownValueModel(name: e, value: e))
                   .toList(),
               onChanged: (value) {
@@ -87,8 +87,8 @@ class _AddExerciseFormState extends State<AddExerciseForm> {
                 if (value == null || value.isEmpty) {
                   return "Field cannot be empty";
                 }
-                var isValid =
-                    gym.validateExercises(_data['group']!, _data['name']!);
+                var isValid = exerciseProvider.validateExercises(
+                    _data['group']!, _data['name']!);
                 return isValid;
               },
             ),
@@ -136,7 +136,7 @@ class _AddExerciseFormState extends State<AddExerciseForm> {
                 if (isValid) {
                   // Add exercise
                   try {
-                    await gym.addExercise(
+                    await exerciseProvider.addExercise(
                         _data['group']!, _data['name']!, _data['category']!);
                     Navigator.of(context).pop();
                   } catch (err) {

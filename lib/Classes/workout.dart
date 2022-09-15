@@ -1,4 +1,6 @@
+import 'package:gym_workout_app/Classes/exercise.dart';
 import 'package:gym_workout_app/Classes/exerciseGroup.dart';
+import 'package:gym_workout_app/Classes/personalRecord.dart';
 import 'package:gym_workout_app/Classes/workoutGroup.dart';
 
 class Workout {
@@ -8,9 +10,11 @@ class Workout {
   final double restTime;
   // Body Groups worked
   final List<ExerciseGroup> exerciseGroups;
-  final List<WorkoutGroup> workoutGroups;
+  final List<PersonalRecord> personalRecords;
+  List<WorkoutGroup> workoutGroups;
 
   Workout({
+    required this.personalRecords,
     required this.numExercises,
     required this.restTime,
     required this.numSets,

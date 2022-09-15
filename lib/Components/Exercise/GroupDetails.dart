@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Classes/exerciseGroup.dart';
-import 'package:gym_workout_app/Providers/gym.dart';
+import 'package:gym_workout_app/Providers/exerciseProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -13,7 +13,8 @@ class ExerciseGroupDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gym = Provider.of<Gym>(context, listen: false);
+    final exerciseProvider =
+        Provider.of<ExerciseProvider>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -63,7 +64,8 @@ class ExerciseGroupDetails extends StatelessWidget {
                                       TextButton(
                                         onPressed: () async {
                                           try {
-                                            await gym.deleteExercise(
+                                            await exerciseProvider
+                                                .deleteExercise(
                                               e.category,
                                               e.id,
                                             );

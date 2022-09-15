@@ -7,11 +7,13 @@ class GlobalWorkoutGroup extends StatelessWidget {
   final WorkoutGroup workoutGroup;
   final int index;
   Function(WorkoutGroup) deleteGroup;
+  Function(WorkoutGroup) editGroup;
   GlobalWorkoutGroup({
     Key? key,
     required this.workoutGroup,
     required this.index,
     required this.deleteGroup,
+    required this.editGroup,
   }) : super(key: key);
 
   @override
@@ -39,9 +41,20 @@ class GlobalWorkoutGroup extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => deleteGroup(workoutGroup),
-                    child: const Icon(Icons.delete),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => editGroup(workoutGroup),
+                        child: const Icon(Icons.edit),
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      GestureDetector(
+                        onTap: () => deleteGroup(workoutGroup),
+                        child: const Icon(Icons.delete),
+                      ),
+                    ],
                   )
                 ],
               ),

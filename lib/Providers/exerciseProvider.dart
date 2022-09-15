@@ -3,15 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Classes/exercise.dart';
 import 'package:gym_workout_app/Classes/exerciseGroup.dart';
-import 'package:gym_workout_app/Classes/workout.dart';
-import 'package:gym_workout_app/Classes/workoutGroup.dart';
 import 'package:gym_workout_app/Extensions/capitalize.dart';
 
-class Gym extends ChangeNotifier {
+class ExerciseProvider extends ChangeNotifier {
   List<ExerciseGroup> _exerciseGroups = [];
   List<Exercise> _exercises = [];
   List<String> _groupNames = [];
-  final List<Workout> _workouts = [];
 
   List<ExerciseGroup> get exerciseGroups {
     return _exerciseGroups;
@@ -23,133 +20,6 @@ class Gym extends ChangeNotifier {
 
   List<String> get groupNames {
     return _groupNames;
-  }
-
-  List<Workout> get workouts {
-    return _workouts;
-  }
-
-  Future<void> createWorkout(
-    String workoutName,
-    List<ExerciseGroup> exerciseGroups,
-    List<WorkoutGroup> workoutGroups,
-  ) async {
-    int numExercises = 0;
-    int restTime = 0;
-    int numSets = 0;
-    List<String> exerciseGroupNames = [];
-    List<String> exerciseIds = [];
-    for (var exerciseGroup in exerciseGroups) {
-      exerciseGroupNames.add(exerciseGroup.name);
-    }
-
-    for (var workout in workoutGroups) {
-      restTime += workout.rest;
-      numExercises += workout.exercises.length;
-      numSets += workout.sets;
-      for (var exercise in workout.exercises) {
-        exerciseIds.add(exercise.id);
-      }
-    }
-    _workouts.add(
-      Workout(
-        numExercises: numExercises,
-        restTime: restTime / 60,
-        numSets: numSets,
-        workoutName: workoutName,
-        exerciseGroups: exerciseGroups,
-        workoutGroups: workoutGroups,
-      ),
-    );
-    final String userId = FirebaseAuth.instance.currentUser!.uid;
-    final DocumentReference path = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('workouts')
-        .doc(workoutName.toLowerCase());
-
-    await path.set({
-      'numExercises': numExercises,
-      'numSets': numSets,
-      'restTime': restTime,
-      'workoutName': workoutName.trim().toTitleCase(),
-      'exerciseGroups': exerciseGroupNames,
-    });
-
-    for (var group in workoutGroups) {
-      int index = workoutGroups.indexWhere((element) => element == group);
-      await path.collection('workoutGroups').doc(index.toString()).set({
-        'amount': group.amount,
-        'groupType': group.groupType,
-        'measure': group.measure,
-        'rest': group.rest,
-        'sets': group.sets,
-        'exercises': exerciseIds,
-      });
-    }
-
-    notifyListeners();
-  }
-
-  Future<void> loadWorkouts() async {
-    if (_workouts.isEmpty) {
-      final String userId = FirebaseAuth.instance.currentUser!.uid;
-      final documents = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('workouts')
-          .get();
-
-      for (var doc in documents.docs) {
-        final Workout workout = Workout(
-          numExercises: int.parse(doc.data()['numExercises'].toString()),
-          restTime: double.parse(doc.data()['restTime'].toString()),
-          numSets: int.parse(doc.data()['numSets'].toString()),
-          workoutName: doc.data()['workoutName'],
-          exerciseGroups: [],
-          workoutGroups: [],
-        );
-
-        for (var exercise in doc.data()['exerciseGroups']) {
-          int index = _exerciseGroups
-              .indexWhere((element) => element.name == exercise.toString());
-          workout.exerciseGroups.add(_exerciseGroups[index]);
-        }
-
-        final documentsTwo = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .collection('workouts')
-            .doc(doc.id)
-            .collection('workoutGroups')
-            .get();
-
-        for (var doc2 in documentsTwo.docs) {
-          final workoutGroup = WorkoutGroup(
-              amount: [],
-              rest: int.parse(doc2.data()['rest'].toString()),
-              exercises: [],
-              groupType: doc2.data()['groupType'].toString(),
-              measure: [],
-              sets: int.parse(doc2.data()['sets'].toString()));
-
-          for (var measure in doc2.data()['measure']) {
-            workoutGroup.measure.add(measure.toString());
-          }
-
-          for (var amount in doc2.data()['amount']) {
-            workoutGroup.amount.add(int.parse(amount.toString()));
-          }
-
-          for (var exerciseId in doc2.data()['exercises']) {
-            int index =
-                _exercises.indexWhere((element) => element.id == exerciseId);
-            workoutGroup.exercises.add(_exercises[index]);
-          }
-        }
-        _workouts.add(workout);
-      }
-    }
   }
 
   // Checks if exercise is created before adding it
@@ -232,7 +102,7 @@ class Gym extends ChangeNotifier {
   }
 
   // Load all exercises and groups
-  Future<void> getExercises() async {
+  Future<void> loadExercises() async {
     if (_exerciseGroups.isEmpty || _groupNames.isEmpty) {
       final String userId = FirebaseAuth.instance.currentUser!.uid;
       final List<String> exerciseGroupNames = [];
@@ -262,7 +132,7 @@ class Gym extends ChangeNotifier {
               ],
             ),
           );
-          //_exercises.add(exerciseDetails);
+          _exercises.add(exerciseDetails);
         }
 
         // Exercise Group already created

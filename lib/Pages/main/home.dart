@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Classes/workout.dart';
 import 'package:gym_workout_app/Components/Home/WorkoutItem.dart';
 import 'package:gym_workout_app/Pages/forms/createWorkout.dart';
-import 'package:gym_workout_app/Providers/gym.dart';
+import 'package:gym_workout_app/Providers/exerciseProvider.dart';
+import 'package:gym_workout_app/Providers/workoutProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -11,12 +12,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gym = Provider.of<Gym>(context);
-
-    Future<void> setup() async {
-      await gym.getExercises();
-      await gym.loadWorkouts();
-    }
+    final exerciseProvider = Provider.of<ExerciseProvider>(context);
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
 
     return Scaffold(
       body: SafeArea(
@@ -25,24 +22,31 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Welcome back title
               Text(
                 "Welcome Back, Sam",
                 style: Theme.of(context).textTheme.headline5,
               ),
+              // Spacing
               const SizedBox(
                 height: 10,
               ),
+              // Title
               Text(
                 "Explore Your Workouts",
                 style: Theme.of(context).textTheme.headline1,
               ),
               FutureBuilder(
-                future: Future.wait([gym.getExercises(), gym.loadWorkouts()]),
+                future: Future.wait([
+                  exerciseProvider.loadExercises(),
+                  workoutProvider.loadWorkouts()
+                ]),
                 builder: (ctx, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    final List<Workout> _workouts = gym.workouts;
+                    final List<Workout> _workouts = workoutProvider.workouts;
                     return Expanded(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           if (_workouts.isNotEmpty)
                             Expanded(
@@ -94,9 +98,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   }
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Expanded(
+                      child: Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.black,
+                    ),
+                  ));
                 },
               )
             ],

@@ -1,6 +1,7 @@
 import 'package:gym_workout_app/Classes/exercise.dart';
 
 class WorkoutGroup {
+  String? id;
   final String groupType;
   final List<Exercise> exercises;
   final List<String> measure;
@@ -10,6 +11,7 @@ class WorkoutGroup {
   final List<int> amount;
 
   WorkoutGroup({
+    required this.id,
     required this.amount,
     required this.rest,
     required this.exercises,

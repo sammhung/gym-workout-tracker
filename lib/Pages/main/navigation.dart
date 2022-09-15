@@ -14,6 +14,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   final List<Widget> _screens = [
     HomeScreen(),
     ExercisesScreen(),
+    Container(),
     ProfileScreen(),
   ];
   int _index = 0;
@@ -39,6 +40,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
           BottomNavigationBarItem(
             label: "Exercises",
             icon: Icon(Icons.sports_gymnastics),
+          ),
+          BottomNavigationBarItem(
+            label: "Friends",
+            icon: Icon(Icons.people),
           ),
           BottomNavigationBarItem(
             label: "Profile",
