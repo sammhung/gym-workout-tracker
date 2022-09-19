@@ -35,7 +35,7 @@ class WorkoutDetailsAppbar extends StatelessWidget {
             );
           },
           child: Icon(
-            Icons.remove_red_eye_outlined,
+            Icons.edit_outlined,
             size: 22.sp,
           ),
         ),

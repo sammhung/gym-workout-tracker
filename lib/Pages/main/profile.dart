@@ -9,8 +9,9 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: ElevatedButton(
-          onPressed: () {
-            FirebaseAuth.instance.signOut();
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            Navigator.of(context).pushReplacementNamed('/');
           },
           child: const Text("Sign Out"),
         ),

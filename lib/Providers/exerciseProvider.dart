@@ -104,6 +104,7 @@ class ExerciseProvider extends ChangeNotifier {
   // Load all exercises and groups
   Future<void> loadExercises() async {
     if (_exerciseGroups.isEmpty || _groupNames.isEmpty) {
+      // print(_exerciseGroups);
       final String userId = FirebaseAuth.instance.currentUser!.uid;
       final List<String> exerciseGroupNames = [];
       final List<ExerciseGroup> exercisesGroupLOAD = [];

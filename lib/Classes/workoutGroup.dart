@@ -1,4 +1,5 @@
 import 'package:gym_workout_app/Classes/exercise.dart';
+import 'package:gym_workout_app/Classes/personalRecord.dart';
 
 class WorkoutGroup {
   String? id;
@@ -7,6 +8,7 @@ class WorkoutGroup {
   final List<String> measure;
   final int rest;
   final int sets;
+  List<PersonalRecord> personalRecords;
   // Amount could be time or reps, depending on the measure
   final List<int> amount;
 
@@ -18,5 +20,6 @@ class WorkoutGroup {
     required this.groupType,
     required this.measure,
     required this.sets,
+    required this.personalRecords,
   });
 }

@@ -1,7 +1,9 @@
+import 'package:easy_splash_screen/easy_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Pages/main/exercises.dart';
 import 'package:gym_workout_app/Pages/main/home.dart';
 import 'package:gym_workout_app/Pages/main/profile.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({Key? key}) : super(key: key);

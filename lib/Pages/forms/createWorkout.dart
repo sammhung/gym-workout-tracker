@@ -51,6 +51,7 @@ class _CreateWorkoutState extends State<CreateWorkout> {
 
   // Passed to add workout page
   void addGroup() {
+    print("ADDING");
     final WorkoutGroup _groupDetails = WorkoutGroup(
       id: null,
       amount: [],
@@ -58,6 +59,8 @@ class _CreateWorkoutState extends State<CreateWorkout> {
       exercises: [],
       groupType: _workoutGroup['groupType'],
       measure: [],
+      // This is later created when stored in DB
+      personalRecords: [],
       sets: _workoutGroup['sets'],
     );
 
@@ -102,6 +105,7 @@ class _CreateWorkoutState extends State<CreateWorkout> {
       exercises: [],
       groupType: _workoutGroup['groupType'],
       measure: [],
+      personalRecords: [],
       sets: _workoutGroup['sets'],
     );
 

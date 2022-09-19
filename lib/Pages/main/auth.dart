@@ -164,6 +164,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                   await auth.login(userDetails['email']!,
                                       userDetails['password']!);
                                 }
+                                Navigator.of(context).pushReplacementNamed('/');
                               } catch (err) {
                                 String message = "";
                                 // Account already used

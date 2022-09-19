@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gym_workout_app/Classes/workout.dart';
 import 'package:gym_workout_app/Components/Global/PersonaRecordItem.dart';
+import 'package:gym_workout_app/Components/Global/WorkoutGroup.dart';
+import 'package:gym_workout_app/Pages/main/startWorkout.dart';
 import 'package:gym_workout_app/Components/WorkoutDetails/appbar.dart';
 
 class WorkoutDetailsScreen extends StatelessWidget {
@@ -28,32 +30,42 @@ class WorkoutDetailsScreen extends StatelessWidget {
                 "Personal Records",
                 style: Theme.of(context).textTheme.headline5,
               ),
-              const SizedBox(
-                height: 15,
-              ),
+              // List of personal records
               Expanded(
-                child: GridView(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    mainAxisSpacing: 15,
-                    crossAxisSpacing: 15,
-                    crossAxisCount: 2,
-                  ),
-                  children: workout.personalRecords
-                      .map(
-                        (personalRecord) => PersonalRecordItem(
-                          personalRecord: personalRecord,
-                        ),
-                      )
-                      .toList(),
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  children: workout.workoutGroups.map(
+                    (group) {
+                      final int index = workout.workoutGroups
+                          .indexWhere(((element) => element.id == group.id));
+                      return GlobalWorkoutGroup(
+                        viewMode: true,
+                        workoutGroup: group,
+                        index: index,
+                        // These functions are not used
+                        deleteGroup: (e) {},
+                        editGroup: (e) {},
+                      );
+                    },
+                  ).toList(),
                 ),
               )
             ],
           ),
         ),
       ),
+      // Start workout
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => StartWorkoutScreen(
+                workout: workout,
+              ),
+            ),
+          );
+        },
         child: const Icon(
           Icons.play_arrow,
         ),

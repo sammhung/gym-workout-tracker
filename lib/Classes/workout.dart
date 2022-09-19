@@ -10,11 +10,11 @@ class Workout {
   final double restTime;
   // Body Groups worked
   final List<ExerciseGroup> exerciseGroups;
-  final List<PersonalRecord> personalRecords;
+  //final List<PersonalRecord> personalRecords;
   List<WorkoutGroup> workoutGroups;
 
   Workout({
-    required this.personalRecords,
+    // required this.personalRecords,
     required this.numExercises,
     required this.restTime,
     required this.numSets,

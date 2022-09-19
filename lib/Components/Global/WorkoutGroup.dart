@@ -4,6 +4,7 @@ import 'package:gym_workout_app/Components/Global/WorkoutSet.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 class GlobalWorkoutGroup extends StatelessWidget {
+  final bool viewMode;
   final WorkoutGroup workoutGroup;
   final int index;
   Function(WorkoutGroup) deleteGroup;
@@ -14,6 +15,7 @@ class GlobalWorkoutGroup extends StatelessWidget {
     required this.index,
     required this.deleteGroup,
     required this.editGroup,
+    this.viewMode = false,
   }) : super(key: key);
 
   @override
@@ -41,21 +43,22 @@ class GlobalWorkoutGroup extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => editGroup(workoutGroup),
-                        child: const Icon(Icons.edit),
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      GestureDetector(
-                        onTap: () => deleteGroup(workoutGroup),
-                        child: const Icon(Icons.delete),
-                      ),
-                    ],
-                  )
+                  if (!viewMode)
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => editGroup(workoutGroup),
+                          child: const Icon(Icons.edit),
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        GestureDetector(
+                          onTap: () => deleteGroup(workoutGroup),
+                          child: const Icon(Icons.delete),
+                        ),
+                      ],
+                    )
                 ],
               ),
               const SizedBox(
@@ -64,7 +67,9 @@ class GlobalWorkoutGroup extends StatelessWidget {
               GlobalWorkoutSet(
                 amount: workoutGroup.amount[0],
                 measure: workoutGroup.measure[0],
-                name: workoutGroup.exercises[0].name,
+                isPrView: viewMode,
+                exercise: workoutGroup.exercises[0],
+                pr: !viewMode ? null : workoutGroup.personalRecords[0],
               ),
               if (workoutGroup.groupType == 'superset' ||
                   workoutGroup.groupType == 'circut')
@@ -73,14 +78,18 @@ class GlobalWorkoutGroup extends StatelessWidget {
                   child: GlobalWorkoutSet(
                     amount: workoutGroup.amount[1],
                     measure: workoutGroup.measure[1],
-                    name: workoutGroup.exercises[1].name,
+                    isPrView: viewMode,
+                    exercise: workoutGroup.exercises[1],
+                    pr: !viewMode ? null : workoutGroup.personalRecords[1],
                   ),
                 ),
               if (workoutGroup.groupType == 'circut')
                 GlobalWorkoutSet(
                   amount: workoutGroup.amount[2],
                   measure: workoutGroup.measure[2],
-                  name: workoutGroup.exercises[2].name,
+                  isPrView: viewMode,
+                  exercise: workoutGroup.exercises[2],
+                  pr: !viewMode ? null : workoutGroup.personalRecords[2],
                 ),
               const SizedBox(
                 height: 20,

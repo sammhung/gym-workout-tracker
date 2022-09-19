@@ -95,6 +95,7 @@ class _ViewWorkoutScreenState extends State<ViewWorkoutScreen> {
         exercises: [],
         groupType: _workoutGroup['groupType'],
         measure: [],
+        personalRecords: [],
         sets: _workoutGroup['sets'],
       );
 
@@ -139,6 +140,7 @@ class _ViewWorkoutScreenState extends State<ViewWorkoutScreen> {
         exercises: [],
         groupType: _workoutGroup['groupType'],
         measure: [],
+        personalRecords: [],
         sets: _workoutGroup['sets'],
       );
 

@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:easy_splash_screen/easy_splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,6 +29,13 @@ class GymApp extends StatelessWidget {
   const GymApp({super.key});
 
   // This widget is the root of your application.
+  Future<Widget> loadExercises(BuildContext context) async {
+    await Provider.of<ExerciseProvider>(context, listen: false).loadExercises();
+    await Provider.of<WorkoutProvider>(context, listen: false).loadWorkouts();
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const NavigationScreen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -38,14 +48,12 @@ class GymApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<ExerciseProvider, WorkoutProvider>(
           create: (_) => WorkoutProvider(),
-          update: (_, exercise, workout) => WorkoutProvider(
-            exerciseGroups: exercise.exerciseGroups,
-            exercises: exercise.exercises,
-          ),
+          update: (_, exercise, workout) => workout!
+            ..update(
+              exercise.exercises,
+              exercise.exerciseGroups,
+            ),
         ),
-        // ChangeNotifierProvider(
-        //   create: (context) => Gym(),
-        // ),
       ],
       child: ResponsiveSizer(
         builder: (ctx, orientation, screenType) {
@@ -122,15 +130,36 @@ class GymApp extends StatelessWidget {
               CreateWorkout.routeName: (context) => const CreateWorkout(),
             },
             home: StreamBuilder(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: ((context, snapshot) {
-                User? user = snapshot.data;
-                if (user != null) {
-                  return const NavigationScreen();
-                }
-                return const AuthScreen();
-              }),
-            ),
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  User? user = snapshot.data;
+
+                  if (user != null) {
+                    return EasySplashScreen(
+                      logo: Image.asset('assets/staffy.png'),
+                      logoWidth: 30.w,
+                      title: Text(
+                        "BEAST",
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline1!
+                            .copyWith(fontSize: 25.sp),
+                      ),
+                      loadingText: const Text(
+                        "Unleash your inner beast",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontFamily: 'Rubik',
+                        ),
+                      ),
+                      showLoader: true,
+                      futureNavigator: loadExercises(
+                        context,
+                      ),
+                    );
+                  }
+                  return const AuthScreen();
+                }),
           );
         },
       ),
