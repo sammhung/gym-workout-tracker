@@ -38,7 +38,7 @@ class GlobalWorkoutSet extends StatelessWidget {
               children: [
                 Text(exercise.name),
                 Text(
-                  '${isPrView ? pr?.amount ?? '??' : amount} ${measure == 'time' ? 'Seconds' : 'Reps'}',
+                  '${isPrView ? pr?.amount?.round() ?? '??' : amount.round()} ${measure == 'time' ? 'Seconds' : 'Reps'}',
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w300,

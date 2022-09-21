@@ -32,6 +32,7 @@ class GymApp extends StatelessWidget {
   Future<Widget> loadExercises(BuildContext context) async {
     await Provider.of<ExerciseProvider>(context, listen: false).loadExercises();
     await Provider.of<WorkoutProvider>(context, listen: false).loadWorkouts();
+    await Provider.of<Auth>(context, listen: false).getUserDetails();
     await Future.delayed(const Duration(milliseconds: 500));
     return const NavigationScreen();
   }
@@ -136,7 +137,7 @@ class GymApp extends StatelessWidget {
 
                   if (user != null) {
                     return EasySplashScreen(
-                      logo: Image.asset('assets/staffy.png'),
+                      logo: Image.asset('assets/pitbull.jpg'),
                       logoWidth: 30.w,
                       title: Text(
                         "BEAST",

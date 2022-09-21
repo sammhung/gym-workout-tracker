@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final exerciseProvider = Provider.of<ExerciseProvider>(context);
-    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final workoutProvider = Provider.of<WorkoutProvider>(context, listen: true);
 
     return Scaffold(
       body: SafeArea(

@@ -3,6 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Auth extends ChangeNotifier {
+  double userHeight = 0;
+  double userWeight = 0;
+
+  Future<void> getUserDetails() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final response =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    userHeight = response.data()!['height'];
+    userWeight = response.data()!['weight'];
+  }
+
   // Create user
   Future<void> signUp(Map<String, String> userDetails) async {
     try {

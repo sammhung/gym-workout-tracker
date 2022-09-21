@@ -11,6 +11,7 @@ class TimerTop extends StatelessWidget {
   final Function onBack;
   final Function onNext;
   final Function(bool, double?, double) onPr;
+  final Function(bool, double?, double) logExercise;
   const TimerTop({
     Key? key,
     required this.exerciseIndex,
@@ -19,6 +20,7 @@ class TimerTop extends StatelessWidget {
     required this.setIndex,
     required this.workoutGroup,
     required this.onPr,
+    required this.logExercise,
   }) : super(key: key);
 
   @override
@@ -87,27 +89,29 @@ class TimerTop extends StatelessWidget {
           ),
           WorkoutButtons(
             onBack: onBack,
-            onNext: () {
+            onNext: () async {
               double? prTime =
                   workoutGroup.personalRecords[exerciseIndex].amount;
               double? prWeight =
                   workoutGroup.personalRecords[exerciseIndex].weight;
               double? weight = double.tryParse(weights.value.text);
-              // PR hasn't been set
               if (_formKey.currentState!.validate()) {
-                if (prTime == null) {
+                // PR hasn't been set
+                if (prTime == null && timeSpent > 0) {
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: const Text("PR hasn't been set"),
                       content: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
                               "Your personal record hasn't been set. Would you like to set this as your PR?"),
                           const SizedBox(
                             height: 10,
                           ),
-                          Text("Time: $timeSpent"),
+                          Text("Time: ${timeSpent + timeAdded}"),
                           if (weight != null) Text("Weight: $weight")
                         ],
                       ),
@@ -119,14 +123,14 @@ class TimerTop extends StatelessWidget {
                             },
                             child: const Text("No")),
                         TextButton(
-                            onPressed: () {
+                            onPressed: () async {
                               // No Weight added
                               if (weight == null) {
-                                onPr(false, null, timeSpent.toDouble());
+                                await onPr(false, null, timeSpent.toDouble());
                               }
                               // Weight added
                               else {
-                                onPr(false, weight, timeSpent.toDouble());
+                                await onPr(false, weight, timeSpent.toDouble());
                               }
                               onNext();
                               Navigator.of(context).pop();
@@ -136,14 +140,16 @@ class TimerTop extends StatelessWidget {
                     ),
                   );
                 }
-                // PR is sest
-                else {
-                  if (timeSpent > prTime) {
+                // PR is set
+                else if (timeSpent > 0) {
+                  if (timeSpent > prTime!) {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: const Text("You have beaten your PR!"),
                         content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                                 "You have beaten your personal record! Would you like to set this as your new one?"),
@@ -156,7 +162,7 @@ class TimerTop extends StatelessWidget {
                               height: 10,
                             ),
                             Text("New Weight: $weight"),
-                            Text("New Time: $timeSpent")
+                            Text("New Time: ${timeSpent + timeAdded}")
                           ],
                         ),
                         actions: [
@@ -167,14 +173,15 @@ class TimerTop extends StatelessWidget {
                               },
                               child: const Text("No")),
                           TextButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 // No Weight added
                                 if (weight == null) {
-                                  onPr(false, null, timeSpent.toDouble());
+                                  await onPr(false, null, timeSpent.toDouble());
                                 }
                                 // Weight added
                                 else {
-                                  onPr(false, weight, timeSpent.toDouble());
+                                  await onPr(
+                                      false, weight, timeSpent.toDouble());
                                 }
                                 onNext();
                                 Navigator.of(context).pop();
@@ -184,8 +191,20 @@ class TimerTop extends StatelessWidget {
                       ),
                     );
                   }
+                  // No PR Set
+                  else {
+                    // No Weight added
+                    if (weight == null) {
+                      await logExercise(false, null, timeSpent.toDouble());
+                    }
+                    // Weight added
+                    else {
+                      await logExercise(false, weight, timeSpent.toDouble());
+                    }
+
+                    onNext();
+                  }
                 }
-                onNext();
               }
             },
           ),

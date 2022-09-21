@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gym_workout_app/Classes/exercise.dart';
+import 'package:gym_workout_app/Classes/personalRecord.dart';
 import 'package:gym_workout_app/Classes/workout.dart';
 import 'package:gym_workout_app/Classes/workoutGroup.dart';
 import 'package:gym_workout_app/Components/Workout/detailsBottom.dart';
@@ -6,7 +8,10 @@ import 'package:gym_workout_app/Components/Workout/quoteBottom.dart';
 import 'package:gym_workout_app/Components/Workout/restTimerTop.dart';
 import 'package:gym_workout_app/Components/Workout/timerTop.dart';
 import 'package:gym_workout_app/Components/Workout/weightsTop.dart';
+import 'package:gym_workout_app/Providers/workoutProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 class StartWorkoutScreen extends StatefulWidget {
   final Workout workout;
@@ -32,6 +37,9 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
   late TabController _tabController;
   int bottomSelectionIndex = 1;
 
+  // Stopwatch controller
+  final stopWatchTimer = StopWatchTimer();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -40,28 +48,31 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    stopWatchTimer.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final WorkoutGroup group = widget.workout.workoutGroups[workoutGroupIndex];
+    final workoutProvider =
+        Provider.of<WorkoutProvider>(context, listen: false);
+    // Index of workout group in all workouts
+    final int workoutIndex = workoutProvider.workouts
+        .indexWhere((element) => element == widget.workout);
+    final Workout workout = workoutProvider.workouts[workoutIndex];
+    // Index of group in workout
+    final WorkoutGroup group =
+        workoutProvider.workouts[workoutIndex].workoutGroups[workoutGroupIndex];
     final int numExercises = group.exercises.length;
-    String nextExercise = '';
-    // Same exercise
-    if (exerciseIndex + 1 < numExercises) {
-      nextExercise = group.exercises[exerciseIndex + 1].name;
-      // No more exercises
-    } else if (workoutGroupIndex + 1 == widget.workout.workoutGroups.length) {
-      nextExercise = 'NO MORE';
-    }
-    // Next Group
-    else {
-      nextExercise =
-          widget.workout.workoutGroups[workoutGroupIndex + 1].exercises[0].name;
-    }
 
     List<Widget> _bottomSection = [
       const WorkoutQuotesBottom(),
       WorkoutBottomDetails(
         personalRecords: group.personalRecords,
         exercise: group.exercises[exerciseIndex],
+        setIndex: setIndex,
       ),
       Container(),
     ];
@@ -80,7 +91,7 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
       }
       // Finished all
       else if (setIndex + 1 == group.sets &&
-          workoutGroupIndex + 1 == widget.workout.workoutGroups.length &&
+          workoutGroupIndex + 1 == workout.workoutGroups.length &&
           exerciseIndex + 1 == group.exercises.length) {
         print("FINISHED ALL");
       }
@@ -115,8 +126,6 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
           bottomSelectionIndex = 0;
         });
       }
-
-      print('$workoutGroupIndex  $exerciseIndex  $setIndex');
     }
 
     void onBack() {
@@ -128,9 +137,8 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
         setState(() {
           workoutGroupIndex -= 1;
           exerciseIndex =
-              widget.workout.workoutGroups[workoutGroupIndex].exercises.length -
-                  1;
-          setIndex = widget.workout.workoutGroups[workoutGroupIndex].sets - 1;
+              workout.workoutGroups[workoutGroupIndex].exercises.length - 1;
+          setIndex = workout.workoutGroups[workoutGroupIndex].sets - 1;
 
           isRest = false;
         });
@@ -168,8 +176,63 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
       }
     }
 
-    void onSetPr(bool isWeight, double? weights, double amount) {
-      print("SETTING PR");
+    Future<void> logExercise(
+      bool isWeight,
+      double? weights,
+      double amount,
+    ) async {
+      List<Map<String, dynamic>>? historyAmount =
+          group.personalRecords[exerciseIndex].historyAmount;
+      List<Map<String, dynamic>>? historyWeight =
+          group.personalRecords[exerciseIndex].historyWeight;
+      historyAmount?.add({
+        'date': DateTime.now(),
+        'amount': amount,
+      });
+      isWeight
+          ? historyWeight?.add({
+              'date': DateTime.now(),
+              'weight': weights!,
+            })
+          : null;
+      final PersonalRecord pr = PersonalRecord(
+        // Amount stays the same
+        amount: group.personalRecords[exerciseIndex].amount,
+        exercise: group.exercises[exerciseIndex],
+        measure: group.measure[exerciseIndex],
+        // Weight stays the same
+        weight: group.personalRecords[exerciseIndex].weight,
+        historyAmount: historyAmount,
+        historyWeight: historyWeight,
+      );
+      await workoutProvider.updatePr(workout, group, pr, exerciseIndex);
+    }
+
+    Future<void> onSetPr(bool isWeight, double? weights, double amount) async {
+      List<Map<String, dynamic>>? historyAmount =
+          group.personalRecords[exerciseIndex].historyAmount;
+      List<Map<String, dynamic>>? historyWeight =
+          group.personalRecords[exerciseIndex].historyWeight;
+      historyAmount?.add({
+        'date': DateTime.now(),
+        'amount': amount,
+      });
+      isWeight
+          ? historyWeight?.add({
+              'date': DateTime.now(),
+              'weight': weights!,
+            })
+          : null;
+
+      final PersonalRecord pr = PersonalRecord(
+        amount: amount,
+        exercise: group.exercises[exerciseIndex],
+        measure: group.measure[exerciseIndex],
+        weight: weights,
+        historyAmount: historyAmount,
+        historyWeight: historyWeight,
+      );
+      await workoutProvider.updatePr(workout, group, pr, exerciseIndex);
     }
 
     return Scaffold(
@@ -192,10 +255,27 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
                               isInit = false;
                             });
                           },
-                          child: Icon(
-                            Icons.play_circle_outlined,
-                            color: Colors.white,
-                            size: 30.sp,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.play_circle_outlined,
+                                color: Colors.white,
+                                size: 40.sp,
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Text(
+                                "Start Workout",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline1!
+                                    .copyWith(
+                                      color: Colors.white,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
                       )
@@ -215,16 +295,26 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
                                     color: Colors.white,
                                   ),
                                 ),
+                                // Display workout time
+                                StreamBuilder<int>(
+                                    stream: stopWatchTimer.rawTime,
+                                    initialData: 0,
+                                    builder: (context, snapshot) {
+                                      stopWatchTimer.onStartTimer();
+                                      final value = snapshot.data;
+                                      final displayTime =
+                                          StopWatchTimer.getDisplayTime(value!);
+                                      return Text(
+                                        'Duration: ${displayTime.toString().substring(1, 5)}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Rubik',
+                                          fontSize: 18.sp,
+                                        ),
+                                      );
+                                    }),
                                 Text(
-                                  "Next: $nextExercise",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Rubik',
-                                    fontSize: 18.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "${workoutGroupIndex + 1}/${widget.workout.workoutGroups.length}",
+                                  "${workoutGroupIndex + 1}/${workout.workoutGroups.length}",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'Rubik',
@@ -243,6 +333,7 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
                                 onBack: onBack,
                                 onNext: onNext,
                                 onPr: onSetPr,
+                                logExercise: logExercise,
                               ),
                             if (group.measure[exerciseIndex] == 'time' &&
                                 !isRest)
@@ -253,6 +344,7 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen>
                                 setIndex: setIndex,
                                 workoutGroup: group,
                                 onPr: onSetPr,
+                                logExercise: logExercise,
                               ),
                             if (isRest)
                               WorkoutRestTop(

@@ -4,6 +4,8 @@ import 'package:gym_workout_app/Components/Global/PersonaRecordItem.dart';
 import 'package:gym_workout_app/Components/Global/WorkoutGroup.dart';
 import 'package:gym_workout_app/Pages/main/startWorkout.dart';
 import 'package:gym_workout_app/Components/WorkoutDetails/appbar.dart';
+import 'package:gym_workout_app/Providers/workoutProvider.dart';
+import 'package:provider/provider.dart';
 
 class WorkoutDetailsScreen extends StatelessWidget {
   final Workout workout;
@@ -14,6 +16,9 @@ class WorkoutDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final workouts = Provider.of<WorkoutProvider>(context).workouts;
+    final int workoutIndex = workouts
+        .indexWhere((element) => element.workoutName == workout.workoutName);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -21,7 +26,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              WorkoutDetailsAppbar(workout: workout),
+              WorkoutDetailsAppbar(workout: workouts[workoutIndex]),
               const SizedBox(
                 height: 15,
               ),
@@ -34,9 +39,10 @@ class WorkoutDetailsScreen extends StatelessWidget {
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 5),
-                  children: workout.workoutGroups.map(
+                  children: workouts[workoutIndex].workoutGroups.map(
                     (group) {
-                      final int index = workout.workoutGroups
+                      final int index = workouts[workoutIndex]
+                          .workoutGroups
                           .indexWhere(((element) => element.id == group.id));
                       return GlobalWorkoutGroup(
                         viewMode: true,
@@ -61,7 +67,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (ctx) => StartWorkoutScreen(
-                workout: workout,
+                workout: workouts[workoutIndex],
               ),
             ),
           );

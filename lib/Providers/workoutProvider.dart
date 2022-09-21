@@ -25,6 +25,48 @@ class WorkoutProvider extends ChangeNotifier {
     exerciseGroups = newExerciseGroups;
   }
 
+  // Update personal record details
+  Future<void> updatePr(
+    Workout workout,
+    WorkoutGroup group,
+    PersonalRecord pr,
+    int prIndex,
+  ) async {
+    print(prIndex);
+    int workoutIndex = _workouts
+        .indexWhere((element) => element.workoutName == workout.workoutName);
+    int groupIndex = _workouts[workoutIndex]
+        .workoutGroups
+        .indexWhere((element) => element.id == group.id);
+    _workouts[workoutIndex].workoutGroups[groupIndex].personalRecords[prIndex] =
+        pr;
+    notifyListeners();
+    final String userId = FirebaseAuth.instance.currentUser!.uid;
+    final List<Map<String, dynamic>> prDB = [];
+
+    for (var personalRecord
+        in _workouts[workoutIndex].workoutGroups[groupIndex].personalRecords) {
+      prDB.add({
+        'amount': personalRecord.amount,
+        'exercise': personalRecord.exercise.id,
+        'measure': personalRecord.measure,
+        'weight': personalRecord.weight,
+        'historyAmount': personalRecord.historyAmount,
+        'historyWeight': personalRecord.historyWeight,
+      });
+    }
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('workouts')
+        .doc(workout.workoutName.toLowerCase())
+        .collection('workoutGroups')
+        .doc(group.id)
+        .update({
+      'personalRecords': prDB,
+    });
+  }
+
   Future<void> createWorkout(
     String workoutName,
     List<ExerciseGroup> exerciseGroups,
@@ -90,20 +132,23 @@ class WorkoutProvider extends ChangeNotifier {
           exercise: exercise,
           measure: group.measure[exerciseIndex],
           weight: null,
+          historyAmount: [],
+          historyWeight: [],
         );
         personRecordsDb.add({
           'amount': null,
           'exercise': exercise.id,
           'measure': group.measure[exerciseIndex],
           'weight': null,
+          'historyAmount': [],
+          'historyWeight': [],
         });
         personalRecords.add(personalRecord);
       }
 
       // Initialize the workoutGroup PR records (Not set by default)
-      int groupIndex =
-          workoutGroups.indexWhere((element) => element.id == group.id);
-      workoutGroups[groupIndex].personalRecords = personalRecords;
+      workoutGroups[index].personalRecords = personalRecords;
+      workoutGroups[index].id = index.toString();
 
       // Store the workout group in DB
       await path
@@ -184,22 +229,29 @@ class WorkoutProvider extends ChangeNotifier {
           group.exercises.indexWhere((element) => element == exercise);
       personalRecords.add(
         PersonalRecord(
-            amount: null,
-            exercise: exercise,
-            measure: group.measure[exerciseIndex],
-            weight: null),
+          amount: null,
+          exercise: exercise,
+          measure: group.measure[exerciseIndex],
+          weight: null,
+          historyAmount: [],
+          historyWeight: [],
+        ),
       );
       personalRecordsDB.add({
         'amount': null,
         'exercise': exercise.id,
         'measure': group.measure[exerciseIndex],
         'weight': null,
+        'historyAmount': [],
+        'historyWeight': [],
       });
     }
     // Ininitialize the PersonalRecords (Empty array by default)
     group.personalRecords = personalRecords;
     // Add the new group
+    group.id = _workouts.length.toString();
     _workouts[workoutIndex].workoutGroups.add(group);
+
     notifyListeners();
 
     final String userId = FirebaseAuth.instance.currentUser!.uid;
@@ -268,6 +320,10 @@ class WorkoutProvider extends ChangeNotifier {
   ) async {
     int workoutIndex = _workouts
         .indexWhere((element) => element.workoutName == workout.workoutName);
+    for (var group in newGroupOrder) {
+      int index = newGroupOrder.indexWhere((element) => element.id == group.id);
+      newGroupOrder[index].id = index.toString();
+    }
     _workouts[workoutIndex].workoutGroups = newGroupOrder;
     notifyListeners();
     final userId = FirebaseAuth.instance.currentUser!.uid;
@@ -289,7 +345,6 @@ class WorkoutProvider extends ChangeNotifier {
     // Add all documents again
     for (var group in workout.workoutGroups) {
       final index = newGroupOrder.indexWhere((element) => element == group);
-      print(index);
       List<String> exerciseIds = [];
       List<Map<String, dynamic>> personalRecords = [];
       for (var exerciseGroup in group.exercises) {
@@ -300,7 +355,9 @@ class WorkoutProvider extends ChangeNotifier {
           'amount': personalRecord.amount,
           'exercise': personalRecord.exercise.id,
           'measure': personalRecord.measure,
-          'weight': personalRecord.weight
+          'weight': personalRecord.weight,
+          'historyAmount': personalRecord.historyAmount,
+          'historyWeight': personalRecord.historyWeight,
         });
       }
       await FirebaseFirestore.instance
@@ -437,18 +494,41 @@ class WorkoutProvider extends ChangeNotifier {
           for (var personalRecordData in workoutGroupData['personalRecords']) {
             int index = exercises!.indexWhere((element) =>
                 element.id == personalRecordData['exercise'].toString());
-            personalRecords.add(
-              PersonalRecord(
-                amount: personalRecordData['amount'] == null
-                    ? null
-                    : double.parse(personalRecordData['amount'].toString()),
-                exercise: exercises![index],
-                measure: personalRecordData['measure'].toString(),
-                weight: personalRecordData['weight'] == null
-                    ? null
-                    : double.parse(personalRecordData['weight'].toString()),
-              ),
+            PersonalRecord pr = PersonalRecord(
+              amount: personalRecordData['amount'] == null
+                  ? null
+                  : double.parse(personalRecordData['amount'].toString()),
+              exercise: exercises![index],
+              measure: personalRecordData['measure'].toString(),
+              weight: personalRecordData['weight'] == null
+                  ? null
+                  : double.parse(personalRecordData['weight'].toString()),
+              historyAmount: [],
+              historyWeight: [],
             );
+
+            for (int i = 0;
+                i < personalRecordData['historyAmount'].length;
+                i++) {
+              pr.historyAmount!.add({
+                'amount': personalRecordData['historyAmount'][i]['amount'],
+                'date': DateTime.fromMillisecondsSinceEpoch(
+                    personalRecordData['historyAmount'][i]['date'].seconds *
+                        1000)
+              });
+            }
+
+            for (int i = 0;
+                i < personalRecordData['historyWeight'].length;
+                i++) {
+              pr.historyWeight!.add({
+                'weight': personalRecordData['historyWeight'][i]['weight'],
+                'date': DateTime.fromMillisecondsSinceEpoch(
+                    personalRecordData['historyWeight'][i]['date'].seconds *
+                        1000)
+              });
+            }
+            personalRecords.add(pr);
           }
 
           final WorkoutGroup workoutGroup = WorkoutGroup(

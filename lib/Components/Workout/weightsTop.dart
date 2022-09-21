@@ -11,6 +11,7 @@ class RepsWeightTop extends StatelessWidget {
   final Function onBack;
   final Function onNext;
   final Function(bool, double?, double) onPr;
+  final Function(bool, double?, double) logExercise;
   const RepsWeightTop({
     Key? key,
     required this.workoutGroup,
@@ -19,6 +20,7 @@ class RepsWeightTop extends StatelessWidget {
     required this.onBack,
     required this.onNext,
     required this.onPr,
+    required this.logExercise,
   }) : super(key: key);
 
   @override
@@ -140,7 +142,7 @@ class RepsWeightTop extends StatelessWidget {
                 double? prWeights =
                     workoutGroup.personalRecords[exerciseIndex].weight;
                 double? prAmount =
-                    workoutGroup.personalRecords[exerciseIndex].weight;
+                    workoutGroup.personalRecords[exerciseIndex].amount;
                 // PR has not been set
                 if (prWeights == null && prAmount == null) {
                   showDialog(
@@ -189,17 +191,19 @@ class RepsWeightTop extends StatelessWidget {
                     ),
                   );
                 }
+
                 // PR has been set
-                else {
+                else if (prAmount != null) {
                   bool willShowDialog = false;
                   // Body Weight Exercise (If doing more reps than PR)
-                  if (numWeights == null && prAmount! < numReps) {
+                  if (numWeights == null && prAmount < numReps) {
                     willShowDialog = true;
                     // Weights (If doing more weights with same or more reps)
-                  } else if (prWeights! < numWeights! && prAmount! <= numReps) {
+                  } else if (prWeights! < numWeights! && prAmount <= numReps) {
                     willShowDialog = true;
                   }
 
+                  // Only show dialog if PR has been beaten
                   if (willShowDialog) {
                     showDialog(
                       useSafeArea: false,
@@ -217,7 +221,7 @@ class RepsWeightTop extends StatelessWidget {
                             ),
                             if (numWeights != null)
                               Text("Old Weight: $prWeights KG"),
-                            Text("Old Reps: ${prAmount!.round()}"),
+                            Text("Old Reps: ${prAmount.round()}"),
                             const SizedBox(
                               height: 10,
                             ),
@@ -255,6 +259,15 @@ class RepsWeightTop extends StatelessWidget {
                         ],
                       ),
                     );
+                  } else {
+                    // Body Weight Exercise
+                    if (numWeights == null) {
+                      logExercise(false, null, numReps);
+                      // Weights
+                    } else {
+                      logExercise(true, numWeights, numReps);
+                    }
+                    onNext();
                   }
                 }
               }
